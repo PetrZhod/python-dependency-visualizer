@@ -10,7 +10,6 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import config
-import main
 
 
 class ConfigTests(unittest.TestCase):
@@ -136,18 +135,6 @@ class ConfigTests(unittest.TestCase):
             with self.assertRaises(SystemExit) as caught:
                 config.parse_arguments(["--help"])
         self.assertEqual(caught.exception.code, 0)
-
-    def test_print_configuration(self):
-        """На первом этапе вывести ровно пять строк ключ-значение."""
-        if "конфигурации" not in main.__doc__:
-            self.skipTest("Вывод конфигурации нужен только на этапе 1")
-        output = io.StringIO()
-        with contextlib.redirect_stdout(output):
-            self.assertEqual(main.main(self.valid_arguments()), 0)
-        self.assertEqual(output.getvalue().splitlines(), [
-            "package=requests", "repository=https://pypi.org/pypi",
-            "test_repo=False", "ascii_tree=False", "filter=",
-        ])
 
 
 if __name__ == "__main__":

@@ -1,16 +1,34 @@
-"""Этап 1: вывод проверенной конфигурации CLI."""
+"""Этап 2: получение и вывод всех прямых объявленных зависимостей."""
+
+import sys
 
 from config import parse_arguments
+from repository import PyPIRepository
+
+EXIT_ERROR = 1
+
+
+def run(args):
+    """Получить зависимости через JSON API, не вызывая менеджер пакетов."""
+    if args.test_repo:
+        raise ValueError("Чтение тестового графа реализуется на этапе 3")
+    repository = PyPIRepository(args.repository)
+    dependencies = repository.dependencies(args.package)
+    print(f"Прямые зависимости {repository.normalize(args.package)}:")
+    if not dependencies:
+        print("Объявленных зависимостей нет")
+    for declaration in dependencies:
+        print(declaration)
 
 
 def main(argv=None):
-    """Показать пять настроек в формате ключ-значение."""
+    """Проверить параметры и сообщить о сетевой ошибке без traceback."""
     args = parse_arguments(argv)
-    print(f"package={args.package}")
-    print(f"repository={args.repository}")
-    print(f"test_repo={args.test_repo}")
-    print(f"ascii_tree={args.ascii_tree}")
-    print(f"filter={args.filter_substring}")
+    try:
+        run(args)
+    except (ValueError, OSError) as error:
+        print(f"Ошибка: {error}", file=sys.stderr)
+        return EXIT_ERROR
     return 0
 
 
