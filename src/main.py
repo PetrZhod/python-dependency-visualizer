@@ -1,31 +1,35 @@
-"""Этап 2: получение и вывод всех прямых объявленных зависимостей."""
+"""Этап 3: рекурсивное построение графа зависимостей."""
 
 import sys
 
 from config import parse_arguments
+from graph import GraphBuilder, print_graph
 from repository import PyPIRepository
+from local_repository import TestRepository
 
 EXIT_ERROR = 1
 
 
 def run(args):
-    """Получить зависимости через JSON API, не вызывая менеджер пакетов."""
+    """Выбрать реальный или тестовый источник и построить граф."""
     if args.test_repo:
-        raise ValueError("Чтение тестового графа реализуется на этапе 3")
-    repository = PyPIRepository(args.repository)
-    dependencies = repository.dependencies(args.package)
-    print(f"Прямые зависимости {repository.normalize(args.package)}:")
-    if not dependencies:
-        print("Объявленных зависимостей нет")
-    for declaration in dependencies:
-        print(declaration)
+        repository = TestRepository(args.repository)
+    else:
+        repository = PyPIRepository(args.repository)
+    builder = GraphBuilder(repository, args.filter_substring)
+    builder.build(args.package)
+    print_graph(builder)
 
 
 def main(argv=None):
-    """Проверить параметры и сообщить о сетевой ошибке без traceback."""
+    """Проверить параметры, построить граф и обработать ошибки."""
     args = parse_arguments(argv)
     try:
         run(args)
+    except RecursionError:
+        print("Ошибка: граф слишком глубок для рекурсивного DFS",
+              file=sys.stderr)
+        return EXIT_ERROR
     except (ValueError, OSError) as error:
         print(f"Ошибка: {error}", file=sys.stderr)
         return EXIT_ERROR
