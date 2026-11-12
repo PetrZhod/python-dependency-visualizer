@@ -89,8 +89,10 @@ class VisualizationTests(unittest.TestCase):
                     with contextlib.redirect_stdout(io.StringIO()):
                         d2_path, svg_path = visualization.publish_graph(
                             DIAMOND, "A")
-            self.assertEqual(d2_path.read_text(), to_d2(DIAMOND))
-            self.assertEqual(svg_path.read_text(), to_svg(DIAMOND, "A"))
+            self.assertEqual(d2_path.read_text(encoding="utf-8"),
+                             to_d2(DIAMOND))
+            self.assertEqual(svg_path.read_text(encoding="utf-8"),
+                             to_svg(DIAMOND, "A"))
 
     def test_viewer_failure(self):
         """Сохранить результат и объяснить ошибку открытия браузера."""
