@@ -6,6 +6,7 @@ from ascii_tree import format_ascii
 from config import parse_arguments
 from d2_format import to_d2
 from graph import GraphBuilder
+from package_labels import package_labels
 from local_repository import TestRepository
 from repository import PyPIRepository
 from visualization import publish_graph
@@ -24,10 +25,13 @@ def run(args):
     root = repository.normalize(args.package)
     if not graph:
         print("Корневой пакет исключён фильтром")
-    print(to_d2(graph), end="")
+    options = {} if args.test_repo else {
+        "labels": package_labels(repository, graph),
+    }
+    print(to_d2(graph, **options), end="")
     if args.ascii_tree:
-        print(format_ascii(graph, root))
-    publish_graph(graph, root)
+        print(format_ascii(graph, root, **options))
+    publish_graph(graph, root, **options)
 
 
 def main(argv=None):

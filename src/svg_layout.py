@@ -24,7 +24,7 @@ def graph_levels(graph, root):
     return levels
 
 
-def graph_layout(graph, root):
+def graph_layout(graph, root, labels=None):
     """Вернуть координаты, размер прямоугольника и полотна SVG."""
     if not graph:
         return {}, MIN_WIDTH, (400, 150)
@@ -32,7 +32,9 @@ def graph_layout(graph, root):
     rows = {}
     for name, level in levels.items():
         rows.setdefault(level, []).append(name)
-    box_width = max(MIN_WIDTH, max(map(len, graph)) * CHAR_WIDTH + 24)
+    names = [(labels or {}).get(name, name) for name in graph]
+    box_width = max(MIN_WIDTH, max(map(len, names))
+                    * CHAR_WIDTH + 24)
     row_width = max(map(len, rows.values()))
     width = MARGIN * 2 + row_width * (box_width + COLUMN_GAP) + LOOP_SPACE
     height = MARGIN * 2 + len(rows) * (BOX_HEIGHT + ROW_GAP)

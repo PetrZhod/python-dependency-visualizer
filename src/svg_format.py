@@ -33,11 +33,11 @@ def edge_path(source, target, box_width, outer):
             f"{outer},{end} {tx + box_width},{end}")
 
 
-def node_svg(name, position, box_width, root):
+def node_svg(name, position, box_width, root, labels=None):
     """Изобразить пакет с XML-экранированной подписью."""
     x, y = position
     color = "#dbeafe" if name == root else "#f1f5f9"
-    label = escape(name)
+    label = escape((labels or {}).get(name, name))
     return (f'<g class="node"><title>{label}</title>'
             f'<rect x="{x}" y="{y}" width="{box_width}" '
             f'height="{BOX_HEIGHT}" rx="8" fill="{color}" '
@@ -47,9 +47,9 @@ def node_svg(name, position, box_width, root):
             f'font-size="14">{label}</text></g>')
 
 
-def to_svg(graph, root):
+def to_svg(graph, root, labels=None):
     """Сформировать самостоятельный SVG со всеми вершинами и рёбрами."""
-    positions, box_width, size = graph_layout(graph, root)
+    positions, box_width, size = graph_layout(graph, root, labels)
     width, height = size
     lines = [f'{SVG_START} width="{width}" height="{height}" '
              f'viewBox="0 0 {width} {height}">',
@@ -64,6 +64,7 @@ def to_svg(graph, root):
                          'stroke="#526173" stroke-width="1.7" '
                          'marker-end="url(#arrow)"/>')
     for name in sorted(graph):
-        lines.append(node_svg(name, positions[name], box_width, root))
+        lines.append(node_svg(name, positions[name], box_width,
+                              root, labels))
     lines.append('</svg>')
     return "\n".join(lines) + "\n"

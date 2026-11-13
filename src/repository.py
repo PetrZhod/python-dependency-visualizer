@@ -88,6 +88,18 @@ def metadata_dependencies(data, expected_name):
     return sorted(set(dependencies), key=str.casefold)
 
 
+def metadata_version(data):
+    """Прочитать версию метаданных или отметить отсутствие поля."""
+    version = data["info"].get("version")
+    if version is None:
+        return None
+    if not isinstance(version, str) or not version.strip():
+        raise ValueError("Поле version должно содержать непустую строку")
+    if any(not char.isprintable() for char in version):
+        raise ValueError("Поле version содержит управляющие символы")
+    return version.strip()
+
+
 class PyPIRepository:
     """Получать декларации зависимостей последней версии и кешировать их."""
 
@@ -95,6 +107,7 @@ class PyPIRepository:
         """Запомнить базовый URL и создать кеш текущего запуска."""
         self.base_url = repository_base(base_url)
         self.cache = {}
+        self.versions = {}
 
     def normalize(self, name):
         """Проверить и нормализовать имя реального пакета."""
@@ -107,5 +120,15 @@ class PyPIRepository:
         if name not in self.cache:
             url = f"{self.base_url}/{quote(name, safe='')}/json"
             data = read_json(url)
-            self.cache[name] = metadata_dependencies(data, name)
+            dependencies = metadata_dependencies(data, name)
+            version = metadata_version(data)
+            self.cache[name] = dependencies
+            self.versions[name] = version
         return list(self.cache[name])
+
+    def version(self, name):
+        """Получить версию из того же ответа, не повторяя сетевой запрос."""
+        name = self.normalize(name)
+        if name not in self.cache:
+            self.dependencies(name)
+        return self.versions[name]
