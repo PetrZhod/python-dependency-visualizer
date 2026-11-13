@@ -1,0 +1,9 @@
+{
+  "info": {
+    "name": "Babel",
+    "version": "2.9.1",
+    "requires_dist": [
+      "pytz (>=2015.7)"
+    ]
+  }
+}
